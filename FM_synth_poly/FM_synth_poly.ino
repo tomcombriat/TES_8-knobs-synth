@@ -42,8 +42,9 @@ int sub_volume;
 int mod;
 byte notes[POLYPHONY];
 byte runner;
-
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY];
+
+bool sustain = false;
 
 
 
@@ -99,6 +100,7 @@ void setup() {
 
   MIDI.setHandleNoteOn(HandleNoteOn);
   MIDI.setHandleNoteOff(HandleNoteOff);
+  MIDI.setHandleControlChange(HandleControlChange);
 
   MIDI.begin(MIDI_CHANNEL_OMNI);
   Serial.begin(115200);

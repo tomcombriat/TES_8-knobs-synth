@@ -1,12 +1,12 @@
 #include "midi_handles.h"
 
+
+
+/*********************
+       NOTE ON
+ ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
-
-
-
-
-
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
   {
@@ -86,7 +86,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
   }
 
- // shift all oscill
+  // shift all oscill
   byte min_rank = 255;
   for (byte i = 0; i < POLYPHONY; i++)
   {
@@ -96,10 +96,16 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
       min_rank = oscil_rank[i];
     }
   }
-  if (min_rank !=0) for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
+  if (min_rank != 0) for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
 
 
 }
+
+
+/**********************
+      NOTE OFF
+ *********************/
+
 
 void HandleNoteOff(byte channel, byte note, byte velocity)
 {
@@ -113,10 +119,41 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
       to_kill = i;
     }
   }
-  envelope[to_kill].noteOff();
-  oscil_state[to_kill] = 0;
+  if (!sustain)
+  {
+    envelope[to_kill].noteOff();
+    oscil_state[to_kill] = 0;
+  }
+  else oscil_state[to_kill] = 2;
   digitalWrite(LED, LOW);
   //envelope[0].noteOff();
 }
 
+
+/*************************
+      CONTROL CHANGE
+ ************************/
+void HandleControlChange(byte channel, byte control, byte val)
+{
+  switch (control)
+  {
+    case 64:    // sustain
+      {
+        if (val == 0)
+        {
+          sustain = false;
+          for (byte i = 0; i < POLYPHONY; i++)
+          {
+            if (oscil_state[i] == 2)
+            {
+              envelope[i].noteOff();
+              oscil_state[i] = 0;
+            }
+          }
+        }
+        else sustain = true;
+        break;
+      }
+  }
+}
 
