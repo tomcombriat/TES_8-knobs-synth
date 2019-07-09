@@ -20,7 +20,7 @@
 #include <ADSR.h>
 #include "midi_handles.h"
 
-#define POLYPHONY 10
+#define POLYPHONY 16
 #define CONTROL_RATE 512 // Hz, powers of 2 are most reliable
 
 #define LED PA8
@@ -30,7 +30,7 @@ Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aCarrier[POLYPHONY] = Oscil<COS2048_NUM_CEL
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aModulator[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE>(COS2048_DATA);
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> subOscill[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE>(COS2048_DATA);
 Oscil<COS2048_NUM_CELLS, CONTROL_RATE> LFO(COS2048_DATA);
-Oscil<COS2048_NUM_CELLS, AUDIO_RATE> subLFO(COS2048_DATA);
+Oscil<COS2048_NUM_CELLS, CONTROL_RATE> subLFO(COS2048_DATA);
 
 ADSR <AUDIO_RATE, AUDIO_RATE> envelope[POLYPHONY];
 
@@ -39,7 +39,7 @@ Q8n8 mod_index;
 Q16n16 carrier_freq[POLYPHONY], mod_freq;
 Q8n8 mod_to_carrier_ratio ;//= float_to_Q8n8(3.f);
 int sub_volume;
-int mod;
+int mod, mod_sub;
 byte notes[POLYPHONY];
 byte runner;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY];
@@ -122,22 +122,25 @@ void updateControl() {
   //Serial.println(mod_to_carrier_ratio);
 
   sub_volume = mozziAnalogRead(PA7) >> 2;
+  //sub_volume = 255;
   //mod_index = float_to_Q8n8(kSmoothInput.next(mozziAnalogRead(PA2)) / 255.);
-  mod_index = (kSmoothInput.next(mozziAnalogRead(PA2)));
+  mod_index = (kSmoothInput.next(mozziAnalogRead(PA3)));
   deviation = mod_index << 8 ;
 
-  /*for (byte i = 0; i < POLYPHONY; i++)*/ envelope[runner].setTimes(mozziAnalogRead(PA6), 1, 65000, mozziAnalogRead(PA3));
+  /*for (byte i = 0; i < POLYPHONY; i++)*/ envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
   runner++;
   if (runner >= POLYPHONY) runner = 0;
 
-  
-LFO.setFreq_Q16n16((Q16n16) (mozziAnalogRead(PA4) << 8 ));
-//Serial.println(Q16n16_to_float((Q16n16) (mozziAnalogRead(PA4) << 8 )));
-mod = (300 + LFO.next()) >> 3;
-//Serial.println(modulation);
+
+  LFO.setFreq_Q16n16((Q16n16) (mozziAnalogRead(PA6) << 8 ));
+  subLFO.setFreq_Q16n16((Q16n16) (mozziAnalogRead(PA5) << 8 ));
+
+  mod = (350 + LFO.next()) >> 4;
+  mod_sub   = (350 + subLFO.next()) >> 4;
 
 
-  
+
+
 
 }
 
@@ -147,8 +150,8 @@ int updateAudio() {
   {
     envelope[i].update();
     Q15n16 modulation = deviation * aModulator[i].next() >> 8;
-    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 1)      + ((sub_volume * subOscill[i].next()) >> 6  ) ) >> 8)  >> 6)  ;
-    //                       8                    + 8                                    +9           -2        -1              +8            +8 
+    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 1)      + ((((sub_volume * subOscill[i].next()) >> 8) * mod_sub) >> 4)) >> 8)  >> 6)  ;
+    //                       8                    + 8                                    +9           -2        -1              +8            +8
     //sample += (int)  (( envelope[i].next() * ((aCarrier[i].phMod(modulation) << 2) + (sub_volume * subOscill[i].next() >> 8 ) ) ) >> 12) /*+ sub_volume * subOscill[i].next()*/;
   }
 
