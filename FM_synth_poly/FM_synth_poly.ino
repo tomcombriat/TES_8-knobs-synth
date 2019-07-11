@@ -13,6 +13,7 @@
 #include <MozziGuts.h>
 #include <Oscil.h>
 #include <tables/cos2048_int8.h> // table for Oscils to play
+#include <tables/square_no_alias_2048_int8.h>
 #include <mozzi_midi.h>
 #include <mozzi_fixmath.h>
 #include <EventDelay.h>
@@ -29,6 +30,7 @@
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aCarrier[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE>(COS2048_DATA);
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aModulator[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE>(COS2048_DATA);
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> subOscill[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE>(COS2048_DATA);
+Oscil<SQUARE_NO_ALIAS_2048_NUM_CELLS, AUDIO_RATE> subOscill_sq[POLYPHONY] = Oscil<SQUARE_NO_ALIAS_2048_NUM_CELLS, AUDIO_RATE>(SQUARE_NO_ALIAS_2048_DATA);
 Oscil<COS2048_NUM_CELLS, CONTROL_RATE> LFO(COS2048_DATA);
 Oscil<COS2048_NUM_CELLS, CONTROL_RATE> subLFO(COS2048_DATA);
 
@@ -45,7 +47,7 @@ byte runner;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY];
 unsigned long last_sustain_time;
 bool sustain = false;
-
+int mix_sub;
 
 
 Smooth <int> kSmoothInput(0.2f);
@@ -61,6 +63,7 @@ void set_freq()
   {
     mod_freq = ((carrier_freq[i] >> 8) * mod_to_carrier_ratio)  ;
     subOscill[i].setFreq_Q16n16(carrier_freq[i]);
+    subOscill_sq[i].setFreq_Q16n16(carrier_freq[i]);
     aModulator[i].setFreq_Q16n16(mod_freq);
   }
 }
@@ -71,6 +74,7 @@ void set_freq(byte i)
 
   mod_freq = ((carrier_freq[i] >> 8) * mod_to_carrier_ratio)  ;
   subOscill[i].setFreq_Q16n16(carrier_freq[i]);
+  subOscill_sq[i].setFreq_Q16n16(carrier_freq[i]);
   aModulator[i].setFreq_Q16n16(mod_freq);
 
 }
@@ -103,7 +107,7 @@ void setup() {
   MIDI.setHandleControlChange(HandleControlChange);
 
   MIDI.begin(MIDI_CHANNEL_OMNI);
-  Serial.begin(115200);
+  //Serial.begin(115200);
   MIDI.turnThruOff ();
   startMozzi(CONTROL_RATE);
 }
@@ -138,8 +142,11 @@ void updateControl() {
   mod = (400 + LFO.next()) >> 4;
   mod_sub   = (350 + subLFO.next()) >> 4;
 
-  //analogWrite(LED,mod+mod_sub);
 
+
+  //analogWrite(LED,mod+mod_sub);
+  mix_sub = (mozziAnalogRead(PA4)>> 4 );
+  
 
 
 
@@ -152,7 +159,7 @@ int updateAudio() {
   {
     envelope[i].update();
     Q15n16 modulation = deviation * aModulator[i].next() >> 8;
-    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 2)      + ((((sub_volume * subOscill[i].next()) >> 8) * mod_sub) >> 4)) >> 8)  >> 2)  ;
+    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 2)      + ((((sub_volume * (((255-mix_sub) * subOscill[i].next() + (mix_sub) * subOscill_sq[i].next()) >> 8)) >> 8) * mod_sub) >> 4)) >> 8)  >> 2)  ;
     //                       8                    + 8                                    +9           -2        -1              +8            +8
     //sample += (int)  (( envelope[i].next() * ((aCarrier[i].phMod(modulation) << 2) + (sub_volume * subOscill[i].next() >> 8 ) ) ) >> 12) /*+ sub_volume * subOscill[i].next()*/;
   }

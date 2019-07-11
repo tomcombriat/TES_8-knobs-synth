@@ -7,20 +7,24 @@
  ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
+/*  Serial.print("Note on!   ");
+  Serial.println(note);*/
+  byte min_rank = 255;
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
   {
-    if (!envelope[i].playing())
+    if (!envelope[i].playing() && oscil_rank[i] < min_rank)
     {
       empty_arg = i;
-      break;
+      min_rank = oscil_rank[i];
+      //break;
     }
 
   }
 
   if (empty_arg == -1)  //kill a oscil in release phase
   {
-    byte min_rank = 255;
+    min_rank = 255;
     for (byte i = 0; i < POLYPHONY; i++)
     {
       if (oscil_state[i] == 0 && oscil_rank[i] < min_rank)
@@ -57,7 +61,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
   else  // no empty oscil, kill one in sustain mode! (the oldest)
   {
-    byte    min_rank = 255;
+    min_rank = 255;
     byte min_rank_arg = 0;
     for (byte i = 0; i < POLYPHONY; i++)
     {
@@ -89,7 +93,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   }
 
   // shift all oscill
-  byte min_rank = 255;
+  min_rank = 255;
   for (byte i = 0; i < POLYPHONY; i++)
   {
     if (oscil_rank[i] < min_rank)
@@ -111,7 +115,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
 void HandleNoteOff(byte channel, byte note, byte velocity)
 {
-  byte to_kill = 0;
+  byte to_kill = 255;
   byte min_rank = 255;
   for (byte i = 0; i < POLYPHONY; i++)
   {
@@ -121,14 +125,36 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
       to_kill = i;
     }
   }
-  if (!sustain)
+ /* if (to_kill == 255)
+  { Serial.println("oups");
+    Serial.print("Expected note: ");
+    Serial.println(note);
+    for (byte i = 0; i < POLYPHONY; i++)
+    {
+      Serial.print(i);
+      Serial.print("   ");
+      Serial.print(notes[i]);
+      Serial.print(" ");
+      Serial.print(oscil_rank[i]);
+      Serial.print(" ");
+      Serial.println(oscil_state[i]);
+    }
+  }*/
+  if (to_kill != 255)
   {
-    envelope[to_kill].noteOff();
-    oscil_state[to_kill] = 0;
+    if (!sustain)
+    {
+      envelope[to_kill].noteOff();
+      oscil_state[to_kill] = 0;
+    }
+    else oscil_state[to_kill] = 2;
+    digitalWrite(LED, LOW);
+    //envelope[0].noteOff();
+    for (byte i = 0; i < POLYPHONY; i++)
+    {
+      if (oscil_rank[i] > oscil_rank[to_kill]) oscil_rank[i] -= 1;
+    }
   }
-  else oscil_state[to_kill] = 2;
-  digitalWrite(LED, LOW);
-  //envelope[0].noteOff();
 }
 
 
