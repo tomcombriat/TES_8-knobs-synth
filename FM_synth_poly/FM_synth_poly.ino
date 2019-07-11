@@ -4,7 +4,7 @@
        -   unsigned long update_step_counter;
        -   unsigned long num_update_steps;   in ADSR.h (L51)
 
-       TODO: velocity and tremolo and sustain
+
 */
 
 
@@ -43,7 +43,7 @@ int mod, mod_sub;
 byte notes[POLYPHONY];
 byte runner;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY];
-
+unsigned long last_sustain_time;
 bool sustain = false;
 
 
@@ -127,7 +127,7 @@ void updateControl() {
   mod_index = (kSmoothInput.next(mozziAnalogRead(PA3)));
   deviation = mod_index << 8 ;
 
-  /*for (byte i = 0; i < POLYPHONY; i++)*/ envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
+  envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
   runner++;
   if (runner >= POLYPHONY) runner = 0;
 
@@ -135,8 +135,10 @@ void updateControl() {
   LFO.setFreq_Q16n16((Q16n16) (mozziAnalogRead(PA6) << 8 ));
   subLFO.setFreq_Q16n16((Q16n16) (mozziAnalogRead(PA5) << 8 ));
 
-  mod = (350 + LFO.next()) >> 4;
+  mod = (400 + LFO.next()) >> 4;
   mod_sub   = (350 + subLFO.next()) >> 4;
+
+  //analogWrite(LED,mod+mod_sub);
 
 
 
@@ -150,13 +152,15 @@ int updateAudio() {
   {
     envelope[i].update();
     Q15n16 modulation = deviation * aModulator[i].next() >> 8;
-    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 1)      + ((((sub_volume * subOscill[i].next()) >> 8) * mod_sub) >> 4)) >> 8)  >> 6)  ;
+    sample += (int)   (envelope[i].next() * (((((aCarrier[i].phMod(modulation)  ) * mod) >> 2)      + ((((sub_volume * subOscill[i].next()) >> 8) * mod_sub) >> 4)) >> 8)  >> 2)  ;
     //                       8                    + 8                                    +9           -2        -1              +8            +8
     //sample += (int)  (( envelope[i].next() * ((aCarrier[i].phMod(modulation) << 2) + (sub_volume * subOscill[i].next() >> 8 ) ) ) >> 12) /*+ sub_volume * subOscill[i].next()*/;
   }
 
   //Q15n16 modulation = deviation * aModulator.next() >> 8;
   // return (int)  ( envelope[0].next() * (aCarrier[0].phMod(modulation) << 2) >> 8);
+  if (sample > 511) sample = 511;
+  else if (sample < -511) sample = -511;
   return sample;
 }
 

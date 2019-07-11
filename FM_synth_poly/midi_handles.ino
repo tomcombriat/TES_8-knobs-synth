@@ -39,7 +39,8 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     carrier_freq[empty_arg] = Q16n16_mtof(Q8n0_to_Q16n16(note));
     aCarrier[empty_arg].setFreq_Q16n16(carrier_freq[empty_arg]);
     notes[empty_arg] = note;
-    digitalWrite(LED, HIGH);
+    //digitalWrite(LED, HIGH);
+    envelope[empty_arg].setADLevels(velocity, velocity);
     envelope[empty_arg].noteOn();
     oscil_state[empty_arg] = 1;
     byte max_rank = 0;
@@ -69,7 +70,8 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     carrier_freq[min_rank_arg] = Q16n16_mtof(Q8n0_to_Q16n16(note));
     aCarrier[min_rank_arg].setFreq_Q16n16(carrier_freq[min_rank_arg]);
     notes[min_rank_arg] = note;
-    digitalWrite(LED, HIGH);
+    //digitalWrite(LED, HIGH);
+    envelope[min_rank_arg].setADLevels(velocity, velocity);
     envelope[min_rank_arg].noteOn();
     oscil_state[min_rank_arg] = 1;
     set_freq(empty_arg);
@@ -82,7 +84,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
       if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
     }
     oscil_rank[min_rank_arg] = max_rank + 1;
-    Serial.println(max_rank);
+    //Serial.println(max_rank);
 
   }
 
@@ -151,7 +153,20 @@ void HandleControlChange(byte channel, byte control, byte val)
             }
           }
         }
-        else sustain = true;
+        else
+        {
+          sustain = true;
+          if (millis() - last_sustain_time < 500)
+          {
+            for (byte i = 0; i < POLYPHONY; i++)
+            {
+              envelope[i].noteOff();
+              oscil_state[i] = 0;
+            }
+          }
+          last_sustain_time = millis();
+
+        }
         break;
       }
   }
