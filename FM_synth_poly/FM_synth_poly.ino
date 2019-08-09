@@ -2,7 +2,10 @@
    Combriat 2018
    To change from mozzi original:
        -   unsigned long update_step_counter;
+       -   unsigned long update_steps;
        -   unsigned long num_update_steps;   in ADSR.h (L51)
+       -   unsigned long convertMsecToControlUpdateSteps(unsigned int msec){
+   return (uint32_t) (((uint32_t)msec*CONTROL_UPDATE_RATE)>>10); // approximate /1000 with shift
 
 
 */
@@ -106,7 +109,7 @@ void setup() {
   MIDI.setHandleNoteOff(HandleNoteOff);
   MIDI.setHandleControlChange(HandleControlChange);
 
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin(1);
   //Serial.begin(115200);
   MIDI.turnThruOff ();
   startMozzi(CONTROL_RATE);
@@ -133,6 +136,7 @@ void updateControl() {
 
   envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
   runner++;
+  //envelope[runner].update();
   if (runner >= POLYPHONY) runner = 0;
 
 
@@ -166,8 +170,13 @@ int updateAudio() {
 
   //Q15n16 modulation = deviation * aModulator.next() >> 8;
   // return (int)  ( envelope[0].next() * (aCarrier[0].phMod(modulation) << 2) >> 8);
-  if (sample > 511) sample = 511;
+  if (sample > 511) 
+  {
+    digitalWrite(LED,HIGH);
+    sample = 511;
+  }
   else if (sample < -511) sample = -511;
+  //Serial.println(sample);
   return sample;
 }
 
