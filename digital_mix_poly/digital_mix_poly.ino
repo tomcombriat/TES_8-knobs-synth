@@ -62,11 +62,11 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
 
 void set_freq()
 {
-  int freq = mtof(notes[0]);
-  aSin[0].setFreq(freq);
-  aSquare[0].setFreq(freq);
-  aTri[0].setFreq(freq);
-  aSaw[0].setFreq(freq);
+  Q16n16 freq = Q16n16_mtof(notes[0] << 16);
+  aSin[0].setFreq_Q16n16(freq);
+  aSquare[0].setFreq_Q16n16(freq);
+  aTri[0].setFreq_Q16n16(freq);
+  aSaw[0].setFreq_Q16n16(freq);
 }
 
 void set_freq(byte i)
@@ -142,9 +142,10 @@ void updateControl() {
 
   while (MIDI.read());
 
+
   mix1 =  mozziAnalogRead(PA6) >> 4;
   mix2 =  mozziAnalogRead(PA5) >> 4;
-  wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goto to 1024
+  wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
   mix_oscil = mozziAnalogRead(PA3) >> 4 ;
   lpf.setCutoffFreq(mozziAnalogRead(PA4) >> 4);
 
@@ -155,10 +156,8 @@ void updateControl() {
 
   for (byte i = 0; i < POLYPHONY; i++)
   {
-    modulation[i] = LFO[i].next() + 1024;
+    modulation[i] = (LFO[i].next() << 1) + 1600;
   }
-
-
 }
 
 int updateAudio() {
@@ -188,7 +187,7 @@ int updateAudio() {
     partial_sample += ((three_values_knob(wet_dry_mix, 2) >> 1) * wet2) >> 8 ;
     // sample += ((wet_dry_mix) * wet) >> 8;
 
-    sample += (((partial_sample * envelope[i].next()) >> 8) * modulation[i]) >> 10 ;
+    sample += (((partial_sample * envelope[i].next()) >> 8) * modulation[i]) >> 9 ;
   }
   sample = lpf.next(sample);
   if (sample > 511)

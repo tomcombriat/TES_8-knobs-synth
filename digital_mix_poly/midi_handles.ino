@@ -46,7 +46,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
 
     for (byte i = 0; i < POLYPHONY; i++)
-    {$
+    {
       if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
     }
     oscil_rank[empty_arg] = max_rank + 1;
@@ -66,7 +66,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
         min_rank_arg  = i;
       }
     }
-    Serial.println(min_rank_arg);
+    //Serial.println(min_rank_arg);
     notes[min_rank_arg] = note;
     envelope[min_rank_arg].setADLevels(velocity, velocity);
     set_freq(min_rank_arg);
