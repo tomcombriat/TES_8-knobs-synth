@@ -39,7 +39,8 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   {
     notes[empty_arg] = note;
     //digitalWrite(LED, HIGH);
-    envelope[empty_arg].setADLevels(velocity, velocity);
+    //envelope[empty_arg].setADLevels(velocity, velocity);
+    envelope[empty_arg].setADLevels(velocity<<1, velocity);
     envelope[empty_arg].noteOn();
     oscil_state[empty_arg] = 1;
     byte max_rank = 0;
@@ -68,7 +69,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     }
     //Serial.println(min_rank_arg);
     notes[min_rank_arg] = note;
-    envelope[min_rank_arg].setADLevels(velocity, velocity);
+    envelope[min_rank_arg].setADLevels(velocity<<1, velocity);
     set_freq(min_rank_arg);
     envelope[min_rank_arg].noteOn();
     oscil_state[min_rank_arg] = 1;

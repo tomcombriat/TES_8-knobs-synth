@@ -149,14 +149,15 @@ void updateControl() {
   mix_oscil = mozziAnalogRead(PA3) >> 4 ;
   lpf.setCutoffFreq(mozziAnalogRead(PA4) >> 4);
 
-  //Serial.println(aSquare.next());
+
   runner++;
   if (runner >= POLYPHONY) runner = 0;
-  envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
+  //envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
+  envelope[runner].setTimes(mozziAnalogRead(PA2), 6000, 65000, mozziAnalogRead(PA1));
 
   for (byte i = 0; i < POLYPHONY; i++)
   {
-    modulation[i] = (LFO[i].next() << 1) + 1600;
+    modulation[i] = (LFO[i].next()) + 1000;
   }
 }
 
