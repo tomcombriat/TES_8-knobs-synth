@@ -53,7 +53,7 @@ int mix1;
 int mix2;
 int mix_oscil;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0;
-bool sustain = false;
+bool sustain = false, folding = false;
 
 
 
@@ -194,9 +194,14 @@ int updateAudio() {
   if (sample > 511)
   {
     digitalWrite(LED, HIGH);
-    sample = 511;
+    if (folding)  sample = 1024 - sample;
+    else sample = 511;
   }
-  else if (sample < -511) sample = -511;
+  else if (sample < -511)
+  {
+    if (folding) sample = -1024+sample;
+      else sample = -511;
+  }
 
   return sample;
 }
