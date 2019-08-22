@@ -7,8 +7,6 @@
  ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
-/*  Serial.print("Note on!   ");
-  Serial.println(note);*/
   byte min_rank = 255;
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
@@ -39,10 +37,8 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
   if (empty_arg != -1)   //an empty oscil has been found
   {
-
-    carrier_freq[empty_arg] = Q16n16_mtof(Q8n0_to_Q16n16(note));
-    aCarrier[empty_arg].setFreq_Q16n16(carrier_freq[empty_arg]);
     notes[empty_arg] = note;
+    set_freq(empty_arg);
     //digitalWrite(LED, HIGH);
     envelope[empty_arg].setADLevels(velocity, velocity);
     envelope[empty_arg].noteOn();
@@ -55,7 +51,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
       if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
     }
     oscil_rank[empty_arg] = max_rank + 1;
-    set_freq(empty_arg);
+    //set_freq(empty_arg);
   }
 
 
@@ -71,14 +67,13 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
         min_rank_arg  = i;
       }
     }
-    carrier_freq[min_rank_arg] = Q16n16_mtof(Q8n0_to_Q16n16(note));
-    aCarrier[min_rank_arg].setFreq_Q16n16(carrier_freq[min_rank_arg]);
+
     notes[min_rank_arg] = note;
-    //digitalWrite(LED, HIGH);
+    set_freq(empty_arg);
     envelope[min_rank_arg].setADLevels(velocity, velocity);
     envelope[min_rank_arg].noteOn();
     oscil_state[min_rank_arg] = 1;
-    set_freq(empty_arg);
+    
     //for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
 
 
@@ -125,21 +120,6 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
       to_kill = i;
     }
   }
- /* if (to_kill == 255)
-  { Serial.println("oups");
-    Serial.print("Expected note: ");
-    Serial.println(note);
-    for (byte i = 0; i < POLYPHONY; i++)
-    {
-      Serial.print(i);
-      Serial.print("   ");
-      Serial.print(notes[i]);
-      Serial.print(" ");
-      Serial.print(oscil_rank[i]);
-      Serial.print(" ");
-      Serial.println(oscil_state[i]);
-    }
-  }*/
   if (to_kill != 255)
   {
     if (!sustain)
@@ -195,6 +175,34 @@ void HandleControlChange(byte channel, byte control, byte val)
         }
         break;
       }
+      case 1:  //modulation W
+      {
+        modulationW = val;
+        break;
+      }
   }
 }
+
+
+/**********************
+ *    PITCHBEND
+ *    ***************/
+ void HandlePitchBend(byte channel, int bend)
+ {
+  pitchbend = bend;
+  for (byte i = 0; i < POLYPHONY; i++)
+  {
+    if (oscil_state[i] !=0) set_freq(i);
+  }
+ }
+
+
+ /**********************
+  * AFTERTOUCH
+ ******************** */
+
+ void HandleAfterTouchChannel(byte channel, byte after)
+ {
+  aftertouch = after;
+ }
 
