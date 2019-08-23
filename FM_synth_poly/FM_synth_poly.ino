@@ -102,7 +102,7 @@ void setup() {
   MIDI.setHandleAfterTouchChannel(HandleAfterTouchChannel);
 
   MIDI.begin(1);
-  Serial.begin(115200);
+  //Serial.begin(115200);
   MIDI.turnThruOff ();
   startMozzi(CONTROL_RATE);
 }

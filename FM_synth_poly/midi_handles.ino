@@ -192,7 +192,7 @@ void HandleControlChange(byte channel, byte control, byte val)
   pitchbend = bend;
   for (byte i = 0; i < POLYPHONY; i++)
   {
-    if (oscil_state[i] !=0) set_freq(i);
+    if (envelope[i].playing()) set_freq(i);
   }
  }
 
