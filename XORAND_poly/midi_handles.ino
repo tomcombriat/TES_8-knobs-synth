@@ -7,6 +7,7 @@
  ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
+  //Serial.println(note);
   byte min_rank = 255;
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
@@ -40,8 +41,8 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     notes[empty_arg] = note;
     set_freq(empty_arg);
     //digitalWrite(LED, HIGH);
-    //envelope[empty_arg].setADLevels(velocity, velocity);
-    envelope[empty_arg].setADLevels(velocity << 1, velocity);
+    envelope[empty_arg].setADLevels(velocity, velocity);
+    //envelope[empty_arg].setADLevels(velocity << 1, velocity);
     envelope[empty_arg].noteOn();
     oscil_state[empty_arg] = 1;
     byte max_rank = 0;
@@ -70,7 +71,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     }
     //Serial.println(min_rank_arg);
     notes[min_rank_arg] = note;
-    envelope[min_rank_arg].setADLevels(velocity << 1, velocity);
+    envelope[min_rank_arg].setADLevels(velocity, velocity);
     set_freq(min_rank_arg);
     envelope[min_rank_arg].noteOn();
     oscil_state[min_rank_arg] = 1;
@@ -131,7 +132,7 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
       oscil_state[to_kill] = 0;
     }
     else oscil_state[to_kill] = 2;
-    digitalWrite(LED, LOW);
+    
     //envelope[0].noteOff();
     for (byte i = 0; i < POLYPHONY; i++)
     {
