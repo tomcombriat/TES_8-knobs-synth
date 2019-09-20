@@ -24,14 +24,17 @@
 #include <Smooth.h>
 #include <ADSR.h>
 #include <LowPassFilter.h>
-
+#include <AudioDelayFeedback.h>
+#include <Portamento.h>
 #include "midi_handles.h"
 
-#define POLYPHONY 16
-#define CONTROL_RATE 1024 // Hz, powers of 2 are most reliable
+#define POLYPHONY 1
+#define CONTROL_RATE 512 // Hz, powers of 2 are most reliable
 
 #define LED PA8
 
+AudioDelayFeedback <2048, ALLPASS> aDel;
+AudioDelayFeedback <2048, ALLPASS> aDel2;
 
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aSin[POLYPHONY] = Oscil<COS2048_NUM_CELLS, AUDIO_RATE> (COS2048_DATA);
 Oscil<SQUARE_NO_ALIAS_2048_NUM_CELLS, AUDIO_RATE> aSquare[POLYPHONY] = Oscil<SQUARE_NO_ALIAS_2048_NUM_CELLS, AUDIO_RATE>(SQUARE_NO_ALIAS_2048_DATA);
@@ -40,19 +43,20 @@ Oscil<SAW2048_NUM_CELLS, AUDIO_RATE> aSaw[POLYPHONY] = Oscil<SAW2048_NUM_CELLS, 
 Oscil<COS2048_NUM_CELLS, CONTROL_RATE> LFO[POLYPHONY] = Oscil<COS2048_NUM_CELLS, CONTROL_RATE> (COS2048_DATA);
 
 
-
 ADSR <AUDIO_RATE, AUDIO_RATE> envelope[POLYPHONY];
+ADSR <AUDIO_RATE,AUDIO_RATE> envelope_audio;
 LowPassFilter lpf;
 Smooth <int> kSmoothInput(0.2f);
-
+Portamento<CONTROL_RATE> porta;
 
 byte notes[POLYPHONY] = {0};
 int wet_dry_mix, modulation[POLYPHONY];
 int mix1;
-int mix2;
-int mix_oscil, cutoff = 0, pitchbend = 0, aftertouch = 0, prev_cutoff = 0;
-byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0;
+int mix2, delay_level;
+int mix_oscil, cutoff = 0, pitchbend = 0, aftertouch = 0, prev_cutoff = 0, breath_on_cutoff = 0, midi_cutoff = 255;
+byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0, volume = 0, delay_volume = 0;
 bool sustain = false;
+unsigned int porta_time = 0;
 
 
 
@@ -60,9 +64,12 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
 
 
 
-void set_freq(byte i, bool reset_phase = true)
+void set_freq(byte i, bool reset_phase = false)
 {
-  Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]) + (pitchbend << 4));
+
+  //Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]) + (pitchbend << 4));
+  Q16n16 freq = porta.next() + Q16n16_mtof(pitchbend << 4);
+  Serial.println(Q16n16_to_float(freq));
   aSin[i].setFreq_Q16n16(freq);
   aSquare[i].setFreq_Q16n16(freq);
   aTri[i].setFreq_Q16n16(freq);
@@ -112,8 +119,13 @@ void setup() {
   {
     aSaw[i].setPhase(2048 >> 2 );
     envelope[i].setADLevels(255, 255);
+    envelope[i].setTimes(1, 1, 65000, 1000);
   }
+  envelope_audio.setADLevels(255,255);
+  envelope_audio.setTimes(1,1,65000,100);
   lpf.setResonance(25);
+  aDel.setFeedbackLevel(100);
+  aDel2.setFeedbackLevel(-50);
 
   MIDI.setHandleNoteOn(HandleNoteOn);
   MIDI.setHandleNoteOff(HandleNoteOff);
@@ -121,8 +133,11 @@ void setup() {
   MIDI.setHandlePitchBend(HandlePitchBend);
   MIDI.setHandleAfterTouchChannel(HandleAfterTouchChannel);
 
+
+
+
   MIDI.begin(2);
-  //Serial.begin(115200);
+  Serial.begin(115200);
   MIDI.turnThruOff ();
   startMozzi(CONTROL_RATE);
 }
@@ -134,37 +149,46 @@ void loop() {
 void updateControl() {
 
   while (MIDI.read());
-
-
+  set_freq(0);
+  //Serial.println(volume);
   mix1 =  mozziAnalogRead(PA6) >> 4;
   mix2 =  mozziAnalogRead(PA5) >> 4;
   wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
   mix_oscil = mozziAnalogRead(PA3) >> 4 ;
-  cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
-  if (cutoff + aftertouch > 255) cutoff =  255;
-  else cutoff += aftertouch;
+  delay_level = mozziAnalogRead(PA2) >>  4;
+  //cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
+  breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
+  porta_time = mozziAnalogRead(PA1) >> 1 ;
+  porta.setTime(porta_time);
+  
+
+  cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
+
+  if (cutoff > 255) cutoff = 255;
+
   //cutoff = 12;
   if (cutoff != prev_cutoff)
   {
     lpf.setCutoffFreq(cutoff);
     prev_cutoff = cutoff;
   }
- 
+
   runner++;
-  if (runner >= POLYPHONY) runner = 0;
-  envelope[runner].setTimes(mozziAnalogRead(PA2), 1, 65000, mozziAnalogRead(PA1));
+  //if (runner >= POLYPHONY) runner = 0;
+  //envelope[runner].setTimes(1, 1, 65000, mozziAnalogRead(PA1));
   //envelope[runner].setTimes(mozziAnalogRead(PA2), 6000, 65000, mozziAnalogRead(PA1));
 
   for (byte i = 0; i < POLYPHONY; i++)
   {
     modulation[i] = (LFO[i].next()) + 1000;
   }
+  //Serial.println(envelope[0].next());
 }
 
 int updateAudio() {
 
   int sample = 0;
-
+envelope_audio.update();
   for (byte i = 0; i < POLYPHONY; i++)
   {
     envelope[i].update();
@@ -188,20 +212,24 @@ int updateAudio() {
     partial_sample += ((three_values_knob(wet_dry_mix, 2) >> 1) * wet2) >> 8 ;
     // sample += ((wet_dry_mix) * wet) >> 8;
 
-    sample += (((partial_sample * envelope[i].next()) >> 8) * modulation[i]) >> 9 ;
+    sample += (((((partial_sample * (volume)) >> 8) * modulation[i]) >> 8)*envelope_audio.next())>>8 ;  //is played actively now
+    //else sample += (((partial_sample * (envelope[i].next())) >> 8) * modulation[i]) >> 9 ;  //is played actively now
   }
   /*
     if (sample > 511)    sample = 511;
     else if (sample < -511)    sample = -511;
   */
 
-
+  int env = envelope[0].next();
   sample = lpf.next(sample);
+  sample += (((delay_level * aDel.next(byte(sample >> 1), ((Q16n16) 2048) << 16 )) >> 8) * env) >> 8 ;
+  sample += (((delay_level * aDel2.next(byte(sample >> 1), ((Q16n16) 1801) << 16 )) >> 10) * env) >> 8 ;
+
 
   if (sample > 511)
   {
     digitalWrite(LED, HIGH);
-    Serial.println("over!");
+    //Serial.println("over!");
     sample = 511;
   }
   else if (sample < -511)
