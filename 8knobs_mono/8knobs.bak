@@ -51,12 +51,12 @@ Wire Wire Line
 $Comp
 L Device:R_POT RV8
 U 1 1 5D05046E
-P 9100 5900
-F 0 "RV8" H 9030 5946 50  0000 R CNN
-F 1 "10K" H 9030 5855 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 9100 5900 50  0001 C CNN
-F 3 "~" H 9100 5900 50  0001 C CNN
-	1    9100 5900
+P 8200 2150
+F 0 "RV8" H 8130 2196 50  0000 R CNN
+F 1 "10K" H 8130 2105 50  0000 R CNN
+F 2 "Potentiometer_THT:Potentiometer_Alps_RK09K_Single_Vertical" H 8200 2150 50  0001 C CNN
+F 3 "~" H 8200 2150 50  0001 C CNN
+	1    8200 2150
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -244,29 +244,12 @@ F 3 "~" H 7850 5900 50  0001 C CNN
 	1    7650 5900
 	0    -1   -1   0   
 $EndComp
-$Comp
-L Connector:TestPoint TP8
-U 1 1 5D05C750
-P 9250 5900
-F 0 "TP8" V 9204 6088 50  0000 L CNN
-F 1 "out2" V 9295 6088 50  0000 L CNN
-F 2 "TestPoint:TestPoint_THTPad_2.5x2.5mm_Drill1.2mm" H 9450 5900 50  0001 C CNN
-F 3 "~" H 9450 5900 50  0001 C CNN
-	1    9250 5900
-	0    1    1    0   
-$EndComp
 Wire Wire Line
 	8350 4900 8350 5150
 Wire Wire Line
 	8350 5150 8400 5150
 Wire Wire Line
 	8400 5150 8400 5600
-Wire Wire Line
-	8450 4900 8450 5150
-Wire Wire Line
-	8450 5150 8700 5150
-Wire Wire Line
-	8700 5150 8700 5600
 $Comp
 L PC900:PC900 U1
 U 1 1 5D05F12E
@@ -522,17 +505,6 @@ F 3 "~" H 8400 5750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R R7
-U 1 1 5D08D3B5
-P 8700 5750
-F 0 "R7" H 8770 5796 50  0000 L CNN
-F 1 "470" H 8770 5705 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 8630 5750 50  0001 C CNN
-F 3 "~" H 8700 5750 50  0001 C CNN
-	1    8700 5750
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:CP C1
 U 1 1 5D08D78B
 P 8400 6100
@@ -544,17 +516,6 @@ F 3 "~" H 8400 6100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:CP C2
-U 1 1 5D08D81E
-P 8700 6100
-F 0 "C2" H 8818 6146 50  0000 L CNN
-F 1 "10n" H 8818 6055 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D4.0mm_P2.00mm" H 8738 5950 50  0001 C CNN
-F 3 "~" H 8700 6100 50  0001 C CNN
-	1    8700 6100
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0104
 U 1 1 5D08D8D9
 P 8400 6250
@@ -563,17 +524,6 @@ F 1 "GND" H 8405 6077 50  0000 C CNN
 F 2 "" H 8400 6250 50  0001 C CNN
 F 3 "" H 8400 6250 50  0001 C CNN
 	1    8400 6250
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR0105
-U 1 1 5D08D94F
-P 8700 6250
-F 0 "#PWR0105" H 8700 6000 50  0001 C CNN
-F 1 "GND" H 8705 6077 50  0000 C CNN
-F 2 "" H 8700 6250 50  0001 C CNN
-F 3 "" H 8700 6250 50  0001 C CNN
-	1    8700 6250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -704,9 +654,7 @@ F 3 "~" H 8350 6200 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	7950 2550 7700 2550
-Wire Wire Line
-	7950 2000 8350 2000
+	7950 2000 8200 2000
 Wire Wire Line
 	8400 5900 8400 5950
 Wire Wire Line
@@ -730,23 +678,6 @@ $EndComp
 Wire Wire Line
 	8050 6050 8050 6200
 Wire Wire Line
-	9100 5750 8900 5750
-Wire Wire Line
-	8900 5750 8900 5900
-Wire Wire Line
-	8900 5900 8700 5900
-$Comp
-L Device:R R9
-U 1 1 5D0AF4B7
-P 9250 6050
-F 0 "R9" H 9320 6096 50  0000 L CNN
-F 1 "1k" H 9320 6005 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 9180 6050 50  0001 C CNN
-F 3 "~" H 9250 6050 50  0001 C CNN
-	1    9250 6050
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
 	8050 6200 8150 6200
 Wire Wire Line
 	8400 6200 8400 6250
@@ -755,20 +686,6 @@ Connection ~ 8400 6250
 Connection ~ 8150 6200
 Wire Wire Line
 	8150 6200 8400 6200
-Wire Wire Line
-	9100 6200 9100 6050
-Connection ~ 9250 5900
-Wire Wire Line
-	8700 5900 8700 5950
-Connection ~ 8700 5900
-Wire Wire Line
-	8700 6200 8700 6250
-Wire Wire Line
-	8700 6200 9100 6200
-Connection ~ 9100 6200
-Wire Wire Line
-	9100 6200 9250 6200
-Connection ~ 8700 6250
 Wire Wire Line
 	7650 6200 8050 6200
 Wire Wire Line
@@ -780,4 +697,22 @@ Wire Wire Line
 Wire Wire Line
 	8200 6100 8200 5900
 Connection ~ 7650 5900
+Connection ~ 8200 2000
+Wire Wire Line
+	8200 2000 8350 2000
+Wire Wire Line
+	8200 2550 8200 2300
+Wire Wire Line
+	7700 2550 7950 2550
+Connection ~ 7950 2550
+Wire Wire Line
+	7950 2550 8200 2550
+Wire Wire Line
+	8350 2150 8350 3000
+Wire Wire Line
+	8350 3000 8250 3000
+Wire Wire Line
+	8250 3000 8250 3150
+NoConn ~ 8450 4900
+NoConn ~ 8350 3150
 $EndSCHEMATC

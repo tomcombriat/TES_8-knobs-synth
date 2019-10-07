@@ -592,7 +592,6 @@ NoConn ~ 8550 3150
 NoConn ~ 8650 3150
 NoConn ~ 9950 3950
 NoConn ~ 9950 4050
-NoConn ~ 8550 4900
 NoConn ~ 8250 4900
 NoConn ~ 8150 4900
 NoConn ~ 8050 4900
@@ -616,10 +615,6 @@ F 3 "~" H 9700 2900 50  0001 C CNN
 	1    9500 2900
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	9500 2900 8750 2900
-Wire Wire Line
-	8750 2900 8750 3150
 $Comp
 L Connector:TestPoint TP10
 U 1 1 5D0FFE2B
@@ -715,4 +710,17 @@ Wire Wire Line
 	8250 3000 8250 3150
 NoConn ~ 8450 4900
 NoConn ~ 8350 3150
+NoConn ~ 8750 3150
+Wire Wire Line
+	10800 2900 10800 4900
+Wire Wire Line
+	9500 2900 10800 2900
+Wire Wire Line
+	10800 4900 9050 4900
+Wire Wire Line
+	9050 4900 9050 5200
+Wire Wire Line
+	9050 5200 8550 5200
+Wire Wire Line
+	8550 5200 8550 4900
 $EndSCHEMATC
