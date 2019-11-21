@@ -1,11 +1,13 @@
 /*
    Combriat 2018
-   To change from mozzi original:
+   To change from mozzi original in ADSR.h (L51):
        -   unsigned long update_step_counter;
        -   unsigned long update_steps;
-       -   unsigned long num_update_steps;   in ADSR.h (L51)
+       -   unsigned long num_update_steps;   
        -   unsigned long convertMsecToControlUpdateSteps(unsigned int msec){
-   return (uint32_t) (((uint32_t)msec*CONTROL_UPDATE_RATE)>>10); // approximate /1000 with shift
+       -   return (uint32_t) (((uint32_t)msec*CONTROL_UPDATE_RATE)>>10); // approximate /1000 with shift
+   In MozziConfig.h:
+       -   #define AUDIO_RATE 32768
 
 
 */
@@ -201,7 +203,6 @@ int updateAudio() {
   if (sample > 511)
   {
     digitalWrite(LED, HIGH);
-    Serial.println("over!");
     sample = 511;
   }
   else if (sample < -511)
