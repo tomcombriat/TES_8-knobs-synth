@@ -7,6 +7,7 @@ T. Combriat
 * XORAND
 * FM synth
 
+***
 
 ### Hardware
 These synthesizers feature: 
@@ -19,6 +20,7 @@ PCBs for the chip are single faced and can be easily made if one is able to make
 #### Hardware versions
 For now, only one version of this synth has been developped: mono output using the chip PWM and a low-pass 1<sup>st</sup> filter. Other versions, featuring Mozzi HiFi, stereo, DAC outputs may come.
 
+***
 
 ### Programming
 These synths can be programmed like any other STM32 pills using USB to serial converter. Native USB will usually not work. You will  also need a rather new version of the Arduino IDE with Mozzi installed and modify Mozzi in accordance with the beginning of the sketch.
