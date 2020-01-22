@@ -1,4 +1,4 @@
-## XORAND poly
+## TES - XORAND poly
 T. Combriat
 
 A synthetizer based on bitwise XOR and AND operators. A pure digital synth, outside the fashion for analog… Unpredictable sounds guaranteed!
