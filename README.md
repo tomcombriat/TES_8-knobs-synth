@@ -23,4 +23,4 @@ For now, only one version of this synth has been developped: mono output using t
 ***
 
 ### Programming
-These synths can be programmed like any other STM32 pills using USB to serial converter. Native USB will usually not work. You will  also need a rather new version of the Arduino IDE with Mozzi installed and modify Mozzi in accordance with the beginning of the sketch.
+These synths can be programmed like any other STM32 pills using USB to serial converter. Native USB will usually not work. You will  also need a rather new version of the Arduino IDE with Mozzi installed and modify Mozzi in accordance with the beginning of the sketch or use the [TES forked version of Mozzi](https://github.com/tomcombriat/Mozzi/tree/TES-stable).
