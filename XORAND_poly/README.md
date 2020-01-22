@@ -13,6 +13,8 @@ A synthetizer based on bitwise XOR and AND operators. A pure digital synth, outs
 * Low-pass filter with adjustable cutoff (4) and aftertouch
 * Standard Attack (2) and Release (1) knobs
 * Built-in analogic logarithmic volume (V)
+* Polyphony: 16 notes
+* PitchBend and aftertouch
 
 *Note*: numbers in parenthesis denote the knob number. 
 
