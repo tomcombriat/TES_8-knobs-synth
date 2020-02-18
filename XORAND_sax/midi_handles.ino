@@ -42,7 +42,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     notes[empty_arg] = note;
     set_freq(empty_arg);
     //digitalWrite(LED, HIGH);
-    envelope[empty_arg].setADLevels(255, 255);
+    //envelope[empty_arg].setADLevels(255, 255);
     //envelope[empty_arg].setADLevels(velocity << 1, velocity);
     envelope[empty_arg].noteOn();
     oscil_state[empty_arg] = 1;
@@ -103,7 +103,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   if (min_rank != 0) for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
 
 
-
+  volume = velocity;
 }
 
 
@@ -115,7 +115,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 void HandleNoteOff(byte channel, byte note, byte velocity)
 {
   //volume = 0;
-  envelope[0].noteOff();
+  //envelope[0].noteOff();
   envelope_audio.noteOff();
   byte to_kill = 255;
   byte min_rank = 255;
@@ -132,12 +132,12 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
   {
     if (!sustain)
     {
-     // envelope[to_kill].noteOff();
+      // envelope[to_kill].noteOff();
       oscil_state[to_kill] = 0;
     }
     else oscil_state[to_kill] = 2;
 
-    //envelope[0].noteOff();
+    envelope[0].noteOff();
     for (byte i = 0; i < POLYPHONY; i++)
     {
       if (oscil_rank[i] > oscil_rank[to_kill]) oscil_rank[i] -= 1;
@@ -176,14 +176,16 @@ void HandleControlChange(byte channel, byte control, byte val)
 
     case 1:  //modulation
       {
-        for (byte i = 0; i < POLYPHONY; i++) LFO[i].setFreq_Q16n16((Q16n16) (val << 14 ));
+        for (byte i = 0; i < POLYPHONY; i++) LFO[i].setFreq_Q16n16((Q16n16) (val << 13 ));
+        if (val == 0 && mod) mod = false;
+        else if (val != 0 && !mod) mod = true;
         break;
       }
     case 74: //volume
       {
+        //volume = breath_sm.next(val;
         volume = val;
-        //Serial.print("Midi in vol: ");
-        //Serial.println(volume);
+
         break;
       }
     case 71: //cutoff
