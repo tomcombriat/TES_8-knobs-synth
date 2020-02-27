@@ -14,6 +14,7 @@ These synthesizers feature:
 * MIDI input and thru
 * 8 knobs for controlling parameters (thus the name), note that one is hardwired for volume control
 * 6.35mm audio output (mono)
+* standalone power from 3 AA batteries. This ensures cleaner sound thanks to very stable power lines.
 
 PCBs for the chip are single faced and can be easily made if one is able to make 250 microns wide tracks. The mask is provided [here](8knobs_mono) for the mono version.
 
