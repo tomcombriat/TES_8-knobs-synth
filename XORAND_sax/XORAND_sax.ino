@@ -231,7 +231,8 @@ int updateAudio() {
   long sample = 0;
   envelope_audio.update();
 
-  vibrato = (Q15n16) 32 * LFO[0].next();
+  //vibrato = (Q15n16) 32 * LFO[0].next();
+  vibrato = ((Q15n16)  LFO[0].next()) << 4;
   for (byte i = 0; i < POLYPHONY; i++)
   {
     envelope[i].update();
@@ -248,7 +249,7 @@ int updateAudio() {
     int aSaw_next;
 
 
-//mod=false;
+    //mod=false;
     if (!mod)
     {
       aSin_next = aSin[i].next();
@@ -290,9 +291,9 @@ int updateAudio() {
   //int env = envelope_audio.next();
   sample = lpf.next(sample);
 
-    if (sample > 511)
+  if (sample > 511)
   {
-    
+
 
     sample = 511;
   }
@@ -300,7 +301,7 @@ int updateAudio() {
   {
     sample = -511;
   }
-  
+
   sample += (((delay_level * aDel.next(byte(sample >> 2), ((Q16n16) 2048) << 16 )) >> 8) * env) >> 8 ;
   sample += (((delay_level * aDel2.next(byte(sample >> 2), ((Q16n16) 1801) << 16 )) >> 10) * env) >> 8 ;
 
