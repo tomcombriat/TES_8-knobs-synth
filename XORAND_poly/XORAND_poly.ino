@@ -9,6 +9,8 @@
    In MozziConfig.h:
        -   #define AUDIO_RATE 32768
 
+       Or use the TES branch
+
   Compile with -O3 option
   STM32 should work at 128MHz
 
@@ -232,7 +234,7 @@ int updateAudio() {
 #ifndef VIBRATO
     sample += (((partial_sample * envelope[i].next()) >> 8) * modulation[i]) >> 9 ;
 #else
-    sample += (((partial_sample * envelope[i].next()) >> 8));
+    sample += (((partial_sample * envelope[i].next()) >> 7));
 #endif
   }
 
