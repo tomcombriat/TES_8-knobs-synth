@@ -132,7 +132,7 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
       oscil_state[to_kill] = 0;
     }
     else oscil_state[to_kill] = 2;
-    
+
     //envelope[0].noteOff();
     for (byte i = 0; i < POLYPHONY; i++)
     {
@@ -172,7 +172,13 @@ void HandleControlChange(byte channel, byte control, byte val)
 
     case 1:  //modulation
       {
+#ifndef VIBRATO
         for (byte i = 0; i < POLYPHONY; i++) LFO[i].setFreq_Q16n16((Q16n16) (val << 14 ));
+#else
+        LFO[0].setFreq_Q16n16((Q16n16) (val << 13 ));
+        if (val == 0 && mod) mod = false;
+        else if (val != 0 && !mod) mod = true;
+#endif
       }
   }
 }
@@ -180,16 +186,16 @@ void HandleControlChange(byte channel, byte control, byte val)
 
 
 /**********************
- *    PITCHBEND
+      PITCHBEND
  *    ***************/
- void HandlePitchBend(byte channel, int bend)
- {
+void HandlePitchBend(byte channel, int bend)
+{
   pitchbend = bend;
   for (byte i = 0; i < POLYPHONY; i++)
   {
-    if (envelope[i].playing()) set_freq(i,false);
+    if (envelope[i].playing()) set_freq(i, false);
   }
- }
+}
 
 /*********************
    AFTERTOUCH
