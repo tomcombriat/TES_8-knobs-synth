@@ -20,4 +20,7 @@ A synthetizer based on bitwise XOR and AND operators. A pure digital synth, outs
 *Note*: numbers in parenthesis denote the knob number. 
 
 
-
+### Compilation options
+In order to work properly, this sketch should be compiled with -O3 (fastest) option in the Arduino IDE.
+The BluePill must be set to 128MHz clock frequency.
+We are at the edge…
