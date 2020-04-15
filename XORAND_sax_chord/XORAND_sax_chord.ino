@@ -177,10 +177,16 @@ void setup() {
 
 
   MIDI.begin(2);
+  delay(100);
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, HIGH);
+  delay(100);
 
   MIDI.turnThruOff ();
   startMozzi(CONTROL_RATE);
   digitalWrite(LED, LOW);
+
 }
 
 void loop() {
@@ -200,7 +206,7 @@ void updateControl() {
   //cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
   breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
   porta_time = mozziAnalogRead(PA1) >> 1 ;
- // porta.setTime(porta_time);
+  // porta.setTime(porta_time);
 
 
   cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
@@ -230,7 +236,7 @@ int updateAudio() {
 
 
   int breath_next = breath_smooth.next(breath_to_volume[volume]);
-  if (breath_next ==0)
+  if (breath_next == 0)
   {
     for (byte i = 0; i < POLYPHONY; i++) envelope[i].noteOff();
   }
