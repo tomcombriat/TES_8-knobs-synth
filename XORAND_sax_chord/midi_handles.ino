@@ -7,8 +7,7 @@
  ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
-  //porta.start(note);
-  envelope_audio.noteOn();
+  //envelope_audio.noteOn();
   byte min_rank = 255;
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
@@ -17,7 +16,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     {
       empty_arg = i;
       min_rank = oscil_rank[i];
-      
+
     }
 
   }
@@ -44,6 +43,16 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     //digitalWrite(LED, HIGH);
     //envelope[empty_arg].setADLevels(255, 255);
     //envelope[empty_arg].setADLevels(velocity << 1, velocity);
+    envelope[empty_arg].setAttackTime(1);
+
+    for (byte i = 0; i < POLYPHONY; i++)
+    {
+      if (oscil_state[i] == 1)
+      {
+        envelope[empty_arg].setAttackTime(chord_attack);
+        break;
+      }
+    }
     envelope[empty_arg].noteOn();
     oscil_state[empty_arg] = 1;
     byte max_rank = 0;
@@ -74,6 +83,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     notes[min_rank_arg] = note;
     //envelope[min_rank_arg].setADLevels(255, 255);
     set_freq(min_rank_arg);
+    //envelope[empty_arg].setAttackTime(chord_attack);
     envelope[min_rank_arg].noteOn();
     oscil_state[min_rank_arg] = 1;
 
@@ -102,7 +112,6 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   }
   if (min_rank != 0) for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
 
-
   volume = velocity;
 }
 
@@ -130,9 +139,18 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
 
   if (to_kill != 255)
   {
+    envelope[to_kill].setReleaseTime(1);
     if (!sustain)
     {
-       envelope[to_kill].noteOff();
+      for (byte i = 0; i < POLYPHONY; i++)
+      {
+        if (i != to_kill && oscil_state[i] == 1)
+        {
+          envelope[to_kill].setReleaseTime(chord_release);
+          break;
+        }
+      }
+      envelope[to_kill].noteOff();
       oscil_state[to_kill] = 0;
     }
     else oscil_state[to_kill] = 2;
@@ -183,9 +201,7 @@ void HandleControlChange(byte channel, byte control, byte val)
       }
     case 74: //volume
       {
-        //volume = breath_sm.next(val;
         volume = val;
-
         break;
       }
     case 71: //cutoff

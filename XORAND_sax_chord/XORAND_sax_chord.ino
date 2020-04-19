@@ -62,12 +62,12 @@ Smooth <byte> breath_smooth(0.6f);
 byte notes[POLYPHONY] = {0};
 int wet_dry_mix, modulation[POLYPHONY];
 int mix1;
-int mix2, delay_level;
+int mix2;
 int mix_oscil, cutoff = 0, pitchbend = 0, aftertouch = 0, prev_cutoff = 0, breath_on_cutoff = 0, midi_cutoff = 255;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0, volume = 0, delay_volume = 0;
 bool sustain = false;
 bool mod = true;
-unsigned int porta_time = 0;
+unsigned int chord_attack = 1, chord_release = 1;
 byte breath_to_volume[128];
 Q15n16 vibrato;
 
@@ -144,7 +144,7 @@ void setup() {
   for (byte i = 0; i < POLYPHONY; i++)
   {
     aSaw[i].setPhase(2048 >> 2 );
-    envelope[i].setADLevels(64, 64);
+    envelope[i].setADLevels(128, 128);
     envelope[i].setTimes(1, 1, 65000, 10);
   }
 
@@ -189,9 +189,21 @@ void setup() {
 
 }
 
+
+
+
+
+
+
 void loop() {
   audioHook();
 }
+
+
+
+
+
+
 
 void updateControl() {
 
@@ -202,11 +214,12 @@ void updateControl() {
   mix2 =  mozziAnalogRead(PA5) >> 4;
   wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
   mix_oscil = mozziAnalogRead(PA3) >> 4 ;
-  delay_level = mozziAnalogRead(PA2) >>  4;
-  //cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
+
+
   breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
-  porta_time = mozziAnalogRead(PA1) >> 1 ;
-  // porta.setTime(porta_time);
+  chord_release = mozziAnalogRead(PA1) >> 1 ;
+  chord_attack = mozziAnalogRead(PA2) >> 1 ;
+
 
 
   cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
@@ -231,7 +244,7 @@ void updateControl() {
 int updateAudio() {
 
   long sample = 0;
-  envelope_audio.update();
+  //envelope_audio.update();
 
 
 
@@ -290,7 +303,7 @@ int updateAudio() {
       //sample += envelope_audio.next() * (((((partial_sample * (breath_smooth.next(breath_to_volume[volume]))) ) * modulation[i]) >> 16)); //is played actively now
 
       //sample +=  (partial_sample * (breath_next * envelope[i].next()) >> 2)  >> 10;
-      sample += (partial_sample * envelope[i].next()) >> 2;
+      sample += (partial_sample * envelope[i].next()) >> 3;
 
       //else sample += (((partial_sample * (envelope[i].next())) >> 8) * modulation[i]) >> 9 ;  //is played actively now
     }
