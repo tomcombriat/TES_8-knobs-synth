@@ -209,6 +209,11 @@ void HandleControlChange(byte channel, byte control, byte val)
         midi_cutoff = val;
         break;
       }
+      case 5: // pitchbend_amp
+      {
+        pitchbend_amp = val;
+        break;
+      }
   }
 }
 

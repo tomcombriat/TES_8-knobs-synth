@@ -64,7 +64,7 @@ byte notes[POLYPHONY] = {0};
 int wet_dry_mix, modulation[POLYPHONY];
 int mix1;
 int mix2, delay_level;
-int mix_oscil, cutoff = 0, pitchbend = 0, aftertouch = 0, prev_cutoff = 0, breath_on_cutoff = 0, midi_cutoff = 255;
+int mix_oscil, cutoff = 0, pitchbend = 0,pitchbend_amp = 2, aftertouch = 0, prev_cutoff = 0, breath_on_cutoff = 0, midi_cutoff = 255;
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0, volume = 0, delay_volume = 0;
 bool sustain = false;
 bool mod = true;
@@ -82,7 +82,7 @@ void set_freq(byte i, bool reset_phase = false)
 {
 
   //Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]) + (pitchbend << 4));
-  Q16n16 freq = porta.next() + Q16n16_mtof(pitchbend << 4) ; // mettre plutot   Q16n16_mtof((pitchbend << 4) + porta.next())
+  Q16n16 freq = porta.next() + (Q16n16_mtof(pitchbend << 3)* pitchbend_amp) ; // mettre plutot   Q16n16_mtof((pitchbend << 4) + porta.next())
 
 
   //Serial.println(Q16n16_to_float(modulation[i]));
