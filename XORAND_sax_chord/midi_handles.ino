@@ -202,6 +202,10 @@ void HandleControlChange(byte channel, byte control, byte val)
     case 74: //volume
       {
         volume = val;
+        if (val ==0)
+        {
+          for (byte i = 0; i < POLYPHONY; i++) osc_is_on[i]=false;
+        }
         break;
       }
     case 71: //cutoff

@@ -67,6 +67,7 @@ int mix_oscil, cutoff = 0, pitchbend = 0, pitchbend_amp = 2, aftertouch = 0, pre
 byte oscil_state[POLYPHONY], oscil_rank[POLYPHONY], runner = 0, volume = 0, delay_volume = 0;
 bool sustain = false;
 bool mod = true;
+bool osc_is_on[POLYPHONY] = {false};
 unsigned int chord_attack = 1, chord_release = 1;
 byte breath_to_volume[128];
 Q15n16 vibrato;
@@ -80,8 +81,8 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
 void set_freq(byte i, bool reset_phase = false)
 {
 
-
-  Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]) + (pitchbend << 3)* pitchbend_amp);
+  osc_is_on[i] = true;
+  Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]) + (pitchbend << 3) * pitchbend_amp);
   //Q16n16 freq = porta.next() + Q16n16_mtof(pitchbend << 4) ; // mettre plutot   Q16n16_mtof((pitchbend << 4) + porta.next())
 
   //Q16n16 freq = Q16n16_mtof(Q8n0_to_Q16n16(notes[i]));
@@ -259,7 +260,7 @@ int updateAudio() {
   for (byte i = 0; i < POLYPHONY; i++)
   {
     envelope[i].update();
-    if (envelope[i].playing())
+    if (envelope[i].playing() && osc_is_on[i])
     {
       long partial_sample = 0;
 
