@@ -18,7 +18,6 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
       min_rank = oscil_rank[i];
 
     }
-
   }
 
   if (empty_arg == -1)  //kill a oscil in release phase
@@ -32,42 +31,12 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
         min_rank = oscil_rank[i];
       }
     }
-
   }
 
 
-  if (empty_arg != -1)   //an empty oscil has been found
-  {
-    notes[empty_arg] = note;
-    set_freq(empty_arg);
-    //digitalWrite(LED, HIGH);
-    //envelope[empty_arg].setADLevels(255, 255);
-    //envelope[empty_arg].setADLevels(velocity << 1, velocity);
-    envelope[empty_arg].setAttackTime(1);
-
-    for (byte i = 0; i < POLYPHONY; i++)
-    {
-      if (oscil_state[i] == 1)
-      {
-        envelope[empty_arg].setAttackTime(chord_attack);
-        break;
-      }
-    }
-    envelope[empty_arg].noteOn();
-    oscil_state[empty_arg] = 1;
-    byte max_rank = 0;
 
 
-    for (byte i = 0; i < POLYPHONY; i++)
-    {
-      if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
-    }
-    oscil_rank[empty_arg] = max_rank + 1;
-
-  }
-
-
-  else  // no empty oscil, kill one in sustain mode! (the oldest)
+  if (empty_arg == -1)  // no empty oscil, kill one in sustain mode! (the oldest)
   {
     min_rank = 255;
     byte min_rank_arg = 0;
@@ -79,26 +48,23 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
         min_rank_arg  = i;
       }
     }
-    //Serial.println(min_rank_arg);
-    notes[min_rank_arg] = note;
-    //envelope[min_rank_arg].setADLevels(255, 255);
-    set_freq(min_rank_arg);
-    //envelope[empty_arg].setAttackTime(chord_attack);
-    envelope[min_rank_arg].noteOn();
-    oscil_state[min_rank_arg] = 1;
-
-    //for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
-
-
-    byte max_rank = 0;
-    for (byte i = 0; i < POLYPHONY; i++)
-    {
-      if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
-    }
-    oscil_rank[min_rank_arg] = max_rank + 1;
-    //Serial.println(max_rank);
-
+    empty_arg = min_rank_arg;
   }
+
+
+  notes[empty_arg] = note;
+  set_freq(empty_arg);
+  envelope[empty_arg].noteOn();
+  oscil_state[empty_arg] = 1;
+
+
+  byte max_rank = 0;
+  for (byte i = 0; i < POLYPHONY; i++)
+  {
+    if (oscil_rank[i] > max_rank) max_rank = oscil_rank[i];
+  }
+  oscil_rank[empty_arg] = max_rank + 1;
+
 
   // shift all oscill
   min_rank = 255;
@@ -172,52 +138,43 @@ void HandleControlChange(byte channel, byte control, byte val)
   switch (control)
   {
     case 64:    // sustain
+      if (val == 0)
       {
-        if (val == 0)
+        sustain = false;
+        for (byte i = 0; i < POLYPHONY; i++)
         {
-          sustain = false;
-          for (byte i = 0; i < POLYPHONY; i++)
+          if (oscil_state[i] == 2)
           {
-            if (oscil_state[i] == 2)
-            {
-              envelope[i].noteOff();
-              oscil_state[i] = 0;
-            }
+            envelope[i].noteOff();
+            oscil_state[i] = 0;
           }
         }
-        else
-        {
-          sustain = true;
-        }
-        break;
       }
+      else sustain = true;
+      break;
+
 
     case 1:  //modulation
-      {
-        for (byte i = 0; i < POLYPHONY; i++) LFO[i].setFreq_Q16n16((Q16n16) (val << 13 ));
-        if (val == 0 && mod) mod = false;
-        else if (val != 0 && !mod) mod = true;
-        break;
-      }
+      for (byte i = 0; i < POLYPHONY; i++) LFO[i].setFreq_Q16n16((Q16n16) (val << 13 ));
+      if (val == 0 && mod) mod = false;
+      else if (val != 0 && !mod) mod = true;
+      break;
+
     case 74: //volume
-      {
-        volume = val;
-        if (val ==0)
-        {
-          for (byte i = 0; i < POLYPHONY; i++) osc_is_on[i]=false;
-        }
-        break;
+      volume = val;
+      if (val == 0) {
+        for (byte i = 0; i < POLYPHONY; i++) osc_is_on[i] = false;
       }
+      break;
+
     case 71: //cutoff
-      {
-        midi_cutoff = val;
-        break;
-      }
-      case 5: // pitchbend_amp
-      {
-        pitchbend_amp = val;
-        break;
-      }
+      midi_cutoff = val;
+      break;
+
+    case 5: // pitchbend_amp
+      pitchbend_amp = val;
+      break;
+
   }
 }
 
