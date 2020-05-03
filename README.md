@@ -4,8 +4,9 @@ T. Combriat
 8 knobs synths are simple synthesizers based on [Mozzi](https://github.com/sensorium/Mozzi) using STM32 blue pill as the main hardware. Thanks to the computing power of these chips, these synthesizers are able to generate complex polyphonic sounds at 32kHz sampling rate. The aim of this serie is to provide a fixed hardware which can be used for different synthesis methods.
 
 ### Synthesizers
-* [XORAND](XORAND_poly)
+* [XORAND](XORAND_poly, XORAND_sax, XORAND_sax_chord)
 * [FM synth](FM_synth_poly)
+
 
 ***
 
