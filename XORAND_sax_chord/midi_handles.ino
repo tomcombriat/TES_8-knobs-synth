@@ -16,7 +16,6 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     {
       empty_arg = i;
       min_rank = oscil_rank[i];
-
     }
   }
 
@@ -32,8 +31,6 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
       }
     }
   }
-
-
 
 
   if (empty_arg == -1)  // no empty oscil, kill one in sustain mode! (the oldest)
@@ -52,10 +49,21 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   }
 
 
+  envelope[empty_arg].setAttackTime(1);
+  for (byte i = 0; i < POLYPHONY; i++)
+  {
+    if (oscil_state[i] == 1)
+    {
+      envelope[empty_arg].setAttackTime(chord_attack);
+      break;
+    }
+  }
   notes[empty_arg] = note;
   set_freq(empty_arg);
   envelope[empty_arg].noteOn();
   oscil_state[empty_arg] = 1;
+
+
 
 
   byte max_rank = 0;
