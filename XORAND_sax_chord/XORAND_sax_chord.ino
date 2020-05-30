@@ -92,14 +92,6 @@ void set_freq(byte i, bool reset_phase = false)
   aTri[i].setFreq_Q16n16(freq);
   aSaw[i].setFreq_Q16n16(freq);
 
-  /*
-    if (mod)
-    {
-       aSin[i].phMod(vibrato);
-    aSquare[i].phMod(vibrato);
-    aTri[i].phMod(vibrato);
-    aSaw[i].phMod(vibrato);
-    }*/
 
   if (reset_phase) LFO[i].setPhase(0);
 }
@@ -185,7 +177,7 @@ void setup() {
   digitalWrite(LED, HIGH);
   delay(100);
 
-  MIDI.turnThruOff ();
+  MIDI.turnThruOff (); //for speed
   startMozzi(CONTROL_RATE);
   digitalWrite(LED, LOW);
 
@@ -250,22 +242,24 @@ int updateAudio() {
 
 
 
-  int breath_next = breath_smooth.next(breath_to_volume[volume]);
+  int breath_next = breath_smooth.next(breath_to_volume[volume]); // this could be done in updatecontrol() maybe? for speed? And the following also
   if (breath_next == 0)
   {
-    for (byte i = 0; i < POLYPHONY; i++) 
+    for (byte i = 0; i < POLYPHONY; i++)
     {
       envelope[i].noteOff();
-      osc_is_on[i] = false;
-      oscil_state[i] = 0;
+      osc_is_on[i] = false; // so that chord do not fade out during next note afer a short pause
+      oscil_state[i] = 0;   // everybody reset
     }
   }
+
+
   //vibrato = (Q15n16) 32 * LFO[0].next();
   vibrato = ((Q15n16)  LFO[0].next()) << 4;
   for (byte i = 0; i < POLYPHONY; i++)
   {
     envelope[i].update();
-    int env_next = envelope[i].next();
+    int env_next = envelope[i].next();  // for enveloppe to roll even if it is not playing
     if (envelope[i].playing() && osc_is_on[i])
     {
       long partial_sample = 0;
@@ -276,7 +270,6 @@ int updateAudio() {
       int aSaw_next;
 
 
-      //mod=false;
       if (!mod)
       {
         aSin_next = aSin[i].next();
