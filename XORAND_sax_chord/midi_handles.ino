@@ -48,19 +48,22 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     empty_arg = min_rank_arg;
   }
 
-
+  bool chord_note = false;
   envelope[empty_arg].setAttackTime(1);
   for (byte i = 0; i < POLYPHONY; i++)
   {
     if (oscil_state[i] == 1)
     {
       envelope[empty_arg].setAttackTime(chord_attack);
+      chord_note = true;
       break;
     }
   }
   notes[empty_arg] = note;
   set_freq(empty_arg);
-  envelope[empty_arg].noteOn();
+
+  if (chord_note) envelope[empty_arg].noteOn(true);
+  else envelope[empty_arg].noteOn();
   oscil_state[empty_arg] = 1;
 
 
@@ -170,9 +173,9 @@ void HandleControlChange(byte channel, byte control, byte val)
 
     case 74: //volume
       volume = val;
-      if (val == 0) {
+      /*if (val == 0) {
         for (byte i = 0; i < POLYPHONY; i++) osc_is_on[i] = false;
-      }
+        }*/
       break;
 
     case 71: //cutoff

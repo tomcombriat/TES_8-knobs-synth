@@ -33,7 +33,7 @@
 #include <Portamento.h>
 #include "midi_handles.h"
 
-#define POLYPHONY 4
+#define POLYPHONY 10
 #define CONTROL_RATE 1024 // Hz, powers of 2 are most reliable
 
 #define LED PA8
@@ -253,13 +253,19 @@ int updateAudio() {
   int breath_next = breath_smooth.next(breath_to_volume[volume]);
   if (breath_next == 0)
   {
-    for (byte i = 0; i < POLYPHONY; i++) envelope[i].noteOff();
+    for (byte i = 0; i < POLYPHONY; i++) 
+    {
+      envelope[i].noteOff();
+      osc_is_on[i] = false;
+      oscil_state[i] = 0;
+    }
   }
   //vibrato = (Q15n16) 32 * LFO[0].next();
   vibrato = ((Q15n16)  LFO[0].next()) << 4;
   for (byte i = 0; i < POLYPHONY; i++)
   {
     envelope[i].update();
+    int env_next = envelope[i].next();
     if (envelope[i].playing() && osc_is_on[i])
     {
       long partial_sample = 0;
@@ -305,7 +311,7 @@ int updateAudio() {
       //sample += envelope_audio.next() * (((((partial_sample * (breath_smooth.next(breath_to_volume[volume]))) ) * modulation[i]) >> 16)); //is played actively now
 
       //sample +=  (partial_sample * (breath_next * envelope[i].next()) >> 2)  >> 10;
-      sample += (partial_sample * envelope[i].next()) >> 3;
+      sample += (partial_sample * env_next) >> 3;
 
       //else sample += (((partial_sample * (envelope[i].next())) >> 8) * modulation[i]) >> 9 ;  //is played actively now
     }
