@@ -170,7 +170,7 @@ void setup() {
   //Serial.begin(115200);
 
 
-  MIDI.begin(2);
+  MIDI.begin(MIDI_CHANNEL_OMNI);
   delay(100);
   digitalWrite(LED, LOW);
   delay(100);
@@ -233,6 +233,7 @@ void updateControl() {
       modulation[i] = (LFO[i].next());
     }
   */
+  MIDI.read();
 }
 
 int updateAudio() {
@@ -325,9 +326,9 @@ int updateAudio() {
   */
 
   sample = lpf.next(sample);
-  if (sample > 511)
+ if (sample > 511)
   {
-    digitalWrite(LED, HIGH);
+    //digitalWrite(LED, HIGH);
 
     sample = 511;
   }
@@ -335,7 +336,7 @@ int updateAudio() {
   {
     sample = -511;
   }
-  else if (digitalRead(LED)) digitalWrite(LED, LOW);
+  //else if (digitalRead(LED)) digitalWrite(LED, LOW);
 
 
   return sample;

@@ -7,7 +7,6 @@
  ********************/
 void HandleNoteOn(byte channel, byte note, byte velocity)
 {
-  //envelope_audio.noteOn();
   byte min_rank = 255;
   int empty_arg = -1;
   for (byte i = 0; i < POLYPHONY; i++)  //take a non playing oscil
@@ -48,22 +47,22 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     empty_arg = min_rank_arg;
   }
 
-  bool chord_note = false;
-  envelope[empty_arg].setAttackTime(1);
-  for (byte i = 0; i < POLYPHONY; i++)
-  {
-    if (oscil_state[i] == 1)
-    {
-      envelope[empty_arg].setAttackTime(chord_attack);
-      chord_note = true;
-      break;
-    }
-  }
+
   notes[empty_arg] = note;
   set_freq(empty_arg);
 
-  if (chord_note) envelope[empty_arg].noteOn(true);
-  else envelope[empty_arg].noteOn();
+  if (channel == 2)
+  {
+    envelope[empty_arg].setAttackTime(1);
+    envelope[empty_arg].noteOn();
+  }
+
+  else if (channel == 3)
+  {
+    envelope[empty_arg].setAttackTime(chord_attack);
+    envelope[empty_arg].noteOn(true);
+  }
+
   oscil_state[empty_arg] = 1;
 
 
@@ -90,6 +89,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
   if (min_rank != 0) for (byte i = 0; i < POLYPHONY; i++) oscil_rank[i] -= min_rank;
 
   volume = velocity;
+
 }
 
 
@@ -100,11 +100,9 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
 
 void HandleNoteOff(byte channel, byte note, byte velocity)
 {
-  //volume = 0;
-  //envelope[0].noteOff();
-  //envelope_audio.noteOff();
   byte to_kill = 255;
   byte min_rank = 255;
+
   for (byte i = 0; i < POLYPHONY; i++)
   {
     if (note == notes[i] && oscil_state[i] == 1 && oscil_rank[i] < min_rank  )
@@ -116,34 +114,23 @@ void HandleNoteOff(byte channel, byte note, byte velocity)
 
   if (to_kill != 255)
   {
-    envelope[to_kill].setReleaseTime(1);
-    if (!sustain)
-    {
-      for (byte i = 0; i < POLYPHONY; i++)
-      {
-        if (i != to_kill && oscil_state[i] == 1)
-        {
-          envelope[to_kill].setReleaseTime(chord_release);
-          break;
-        }
-      }
-      envelope[to_kill].noteOff();
-      oscil_state[to_kill] = 0;
-    }
-    else oscil_state[to_kill] = 2;
+    if (channel == 2)  envelope[to_kill].setReleaseTime(1);
+    else if (channel == 3) envelope[to_kill].setReleaseTime(chord_release);
+    envelope[to_kill].noteOff();
+    oscil_state[to_kill] = 0;
+  }
 
-    //envelope[0].noteOff();
-    for (byte i = 0; i < POLYPHONY; i++)
-    {
-      if (oscil_rank[i] > oscil_rank[to_kill]) oscil_rank[i] -= 1;
-    }
+  for (byte i = 0; i < POLYPHONY; i++)
+  {
+    if (oscil_rank[i] > oscil_rank[to_kill]) oscil_rank[i] -= 1;
   }
 }
 
 
+
 /*************************
-      CONTROL CHANGE
- ************************/
+  CONTROL CHANGE
+************************/
 void HandleControlChange(byte channel, byte control, byte val)
 {
   switch (control)
