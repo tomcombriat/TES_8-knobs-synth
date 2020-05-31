@@ -33,7 +33,7 @@
 #include <Portamento.h>
 #include "midi_handles.h"
 
-#define POLYPHONY 8
+#define POLYPHONY 10
 #define CONTROL_RATE 2048 // Hz, powers of 2 are most reliable
 
 #define LED PA8
