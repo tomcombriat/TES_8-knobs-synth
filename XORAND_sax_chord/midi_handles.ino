@@ -57,10 +57,15 @@ void HandleNoteOn(byte channel, byte note, byte velocity)
     envelope[empty_arg].noteOn();
   }
 
-  else if (channel == 3)
+  else if (channel == 3 && chord_attack > 5 )
   {
     envelope[empty_arg].setAttackTime(chord_attack);
     envelope[empty_arg].noteOn(true);
+  }
+  else 
+  {
+    envelope[empty_arg].setAttackTime(1);
+    envelope[empty_arg].noteOn();
   }
 
   oscil_state[empty_arg] = 1;

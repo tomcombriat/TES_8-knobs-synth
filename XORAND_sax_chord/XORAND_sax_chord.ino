@@ -33,8 +33,8 @@
 #include <Portamento.h>
 #include "midi_handles.h"
 
-#define POLYPHONY 10
-#define CONTROL_RATE 1024 // Hz, powers of 2 are most reliable
+#define POLYPHONY 8
+#define CONTROL_RATE 2048 // Hz, powers of 2 are most reliable
 
 #define LED PA8
 #define BREATH_LIN
@@ -70,6 +70,7 @@ bool mod = true;
 bool osc_is_on[POLYPHONY] = {false};
 unsigned int chord_attack = 1, chord_release = 1;
 byte breath_to_volume[128];
+bool toggle = 0;
 Q15n16 vibrato;
 
 
@@ -204,28 +205,29 @@ void updateControl() {
   while (MIDI.read());
   //set_freq(0);
   //Serial.println(volume);
-  mix1 =  mozziAnalogRead(PA6) >> 4;
-  mix2 =  mozziAnalogRead(PA5) >> 4;
-  wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
-  mix_oscil = mozziAnalogRead(PA3) >> 4 ;
-
-
-  breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
-  chord_release = mozziAnalogRead(PA1) >> 1 ;
-  chord_attack = mozziAnalogRead(PA2) >> 1 ;
-
-
-
-  cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
-
-  if (cutoff > 255) cutoff = 255;
-
-
-  if (cutoff != prev_cutoff)
+  if (toggle)
   {
-    lpf.setCutoffFreq(cutoff);
-    prev_cutoff = cutoff;
+    mix1 =  mozziAnalogRead(PA6) >> 4;
+    mix2 =  mozziAnalogRead(PA5) >> 4;
+    wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
+    mix_oscil = mozziAnalogRead(PA3) >> 4 ;
   }
+  else
+  {
+    chord_release = mozziAnalogRead(PA1) >> 1 ;
+    chord_attack = mozziAnalogRead(PA2) >> 1 ;
+    breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
+    cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
+
+    if (cutoff > 255) cutoff = 255;
+
+    if (cutoff != prev_cutoff)
+    {
+      lpf.setCutoffFreq(cutoff);
+      prev_cutoff = cutoff;
+    }
+  }
+  toggle = !toggle;
 
   /*
     for (byte i = 0; i < POLYPHONY; i++)
@@ -233,7 +235,7 @@ void updateControl() {
       modulation[i] = (LFO[i].next());
     }
   */
-  MIDI.read();
+  // MIDI.read();
 }
 
 int updateAudio() {
@@ -326,9 +328,9 @@ int updateAudio() {
   */
 
   sample = lpf.next(sample);
- if (sample > 511)
+  if (sample > 511)
   {
-    //digitalWrite(LED, HIGH);
+    digitalWrite(LED, HIGH);
 
     sample = 511;
   }
@@ -336,7 +338,7 @@ int updateAudio() {
   {
     sample = -511;
   }
-  //else if (digitalRead(LED)) digitalWrite(LED, LOW);
+  else if (digitalRead(LED)) digitalWrite(LED, LOW);
 
 
   return sample;
