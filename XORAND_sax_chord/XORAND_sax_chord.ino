@@ -70,7 +70,7 @@ bool mod = true;
 bool osc_is_on[POLYPHONY] = {false};
 unsigned int chord_attack = 1, chord_release = 1;
 byte breath_to_volume[128];
-bool toggle = 0;
+int toggle = 0;
 Q15n16 vibrato;
 
 
@@ -205,29 +205,41 @@ void updateControl() {
   while (MIDI.read());
   //set_freq(0);
   //Serial.println(volume);
-  if (toggle)
-  {
-    mix1 =  mozziAnalogRead(PA6) >> 4;
-    mix2 =  mozziAnalogRead(PA5) >> 4;
-    wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
-    mix_oscil = mozziAnalogRead(PA3) >> 4 ;
-  }
-  else
-  {
-    chord_release = mozziAnalogRead(PA1) >> 1 ;
-    chord_attack = mozziAnalogRead(PA2) >> 1 ;
-    breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
-    cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
 
-    if (cutoff > 255) cutoff = 255;
+  toggle++;
 
-    if (cutoff != prev_cutoff)
-    {
-      lpf.setCutoffFreq(cutoff);
-      prev_cutoff = cutoff;
-    }
+  switch (toggle)
+  {
+    case 1:
+      mix1 =  mozziAnalogRead(PA6) >> 4;
+      break;
+    case 2:
+      mix2 =  mozziAnalogRead(PA5) >> 4;
+      break;
+    case 3:
+      wet_dry_mix = mozziAnalogRead(PA7) >> 2;  // goos to 1024
+      break;
+    case 4:
+      mix_oscil = mozziAnalogRead(PA3) >> 4 ;
+      break;
+    case 5:
+      chord_release = mozziAnalogRead(PA1) >> 1 ;
+      break;
+    case 6:
+      chord_attack = mozziAnalogRead(PA2) >> 1 ;
+      break;
+    case 7:
+      breath_on_cutoff = kSmoothInput(mozziAnalogRead(PA4) >> 4);
+      cutoff = ((breath_on_cutoff * volume) >> 7 ) + midi_cutoff;
+      if (cutoff > 255) cutoff = 255;
+      if (cutoff != prev_cutoff)
+      {
+        lpf.setCutoffFreq(cutoff);
+        prev_cutoff = cutoff;
+      }
+      toggle = 0;
+      break;
   }
-  toggle = !toggle;
 
   /*
     for (byte i = 0; i < POLYPHONY; i++)
