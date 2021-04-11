@@ -75,7 +75,11 @@ Q15n16 vibrato;
 
 
 
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+// Serial1 RX PA10
+// Serial2 RX PA3
+// Serial3 RX PB11
+
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 
 

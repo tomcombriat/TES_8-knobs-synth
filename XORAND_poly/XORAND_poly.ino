@@ -69,10 +69,11 @@ Q15n16 vibrato;
 bool mod = true;
 #endif
 
+// Serial1 RX PA10
+// Serial2 RX PA3
+// Serial3 RX PB11
 
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
-
-
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 void set_freq(byte i, bool reset_phase = true)
 {
